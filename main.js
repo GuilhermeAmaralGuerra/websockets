@@ -1,5 +1,15 @@
 import { createBoard, playMove } from "./connect4.js";
 
+function getWebSocketServer() {
+  if (window.location.host === "python-websockets.github.io") {
+    return "wss://websockets-tutorial.koyeb.app/";
+  } else if (window.location.host === "localhost:8000") {
+    return "ws://localhost:8001/";
+  } else {
+    throw new Error(`Unsupported host: ${window.location.host}`);
+  }
+}
+
 function initGame(websocket) {
   websocket.addEventListener("open", () => {
     // Send an "init" event according to who is connecting.
@@ -30,9 +40,6 @@ function receiveMoves(board, websocket) {
         // Create links for inviting the second player and spectators.
         document.querySelector(".join").href = "?join=" + event.join;
         document.querySelector(".watch").href = "?watch=" + event.watch;
-
-        let link = document.querySelector('a.action.join');
-        link.textContent = "/?join=" + event.join;
         break;
       case "play":
         // Update the UI with the move.
@@ -79,7 +86,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const board = document.querySelector(".board");
   createBoard(board);
   // Open the WebSocket connection and register event handlers.
-  const websocket = new WebSocket("ws://localhost:8001/");
+  const websocket = new WebSocket(getWebSocketServer());
   initGame(websocket);
   receiveMoves(board, websocket);
   sendMoves(board, websocket);
